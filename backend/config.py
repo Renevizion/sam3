@@ -19,12 +19,15 @@ class Config:
     HF_TOKEN = os.getenv("HF_TOKEN", "")
     KIE_API_KEY = os.getenv("KIE_API_KEY", "")
     
-    # Server settings
+    # Server configuration
     HOST = os.getenv("HOST", "0.0.0.0")
     PORT = int(os.getenv("PORT", "8000"))
     
     # Model settings
     DEVICE = "cuda" if os.getenv("CUDA_VISIBLE_DEVICES") != "-1" else "cpu"
+    
+    # kie.ai settings
+    KIE_API_URL = os.getenv("KIE_API_URL", "https://api.kie.ai/v1/generate/nano-banana")
     
     # File paths
     FRONTEND_DIR = os.getenv("FRONTEND_DIR", "../frontend/dist")

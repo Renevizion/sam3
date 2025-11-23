@@ -5,6 +5,7 @@ Loads models lazily to minimize startup time and memory usage
 import os
 import tempfile
 import io
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -204,8 +205,7 @@ async def generate_image_kie(
             )
         
         # Make API call to kie.ai
-        # Note: This is a placeholder URL - replace with actual kie.ai endpoint
-        kie_api_url = "https://api.kie.ai/v1/generate/nano-banana"
+        kie_api_url = config.KIE_API_URL
         
         headers = {
             "Authorization": f"Bearer {config.KIE_API_KEY}",
@@ -225,6 +225,14 @@ async def generate_image_kie(
                 detail=f"kie.ai API error: {response.text}"
             )
         
+        # Validate that response is image data
+        content_type = response.headers.get('content-type', '')
+        if not content_type.startswith('image/'):
+            raise HTTPException(
+                status_code=500,
+                detail=f"kie.ai API returned non-image content: {content_type}"
+            )
+        
         # Save the generated image
         with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp:
             tmp.write(response.content)
@@ -233,7 +241,7 @@ async def generate_image_kie(
         return FileResponse(
             tmp_path,
             media_type="image/png",
-            filename="kie_generated.png",
+            filename=f"kie_generated_{int(time.time())}.png",
             background=lambda: os.unlink(tmp_path)
         )
         
