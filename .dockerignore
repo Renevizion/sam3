@@ -1,0 +1,6 @@
+# Cache directories (for Docker volumes)
+cache/
+
+# Temporary files
+*.tmp
+temp/
