@@ -1,0 +1,19 @@
+# Core dependencies
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+python-multipart==0.0.20
+pillow==10.4.0
+
+# PyTorch (installed separately via pip with CUDA support)
+# torch==2.7.0
+# torchvision
+
+# SAM3 dependencies (from parent package)
+timm>=1.0.17
+numpy==1.26
+tqdm
+ftfy==6.1.1
+regex
+iopath>=0.1.10
+typing_extensions
+huggingface_hub
