@@ -185,6 +185,64 @@ async def process_video(
         raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
 
 
+@app.post("/api/generate/image-kie")
+async def generate_image_kie(
+    text_prompt: str = Form(...),
+):
+    """
+    Generate an image using kie.ai "nano banana" service
+    Makes a server-to-server API call to kie.ai
+    """
+    try:
+        import requests
+        
+        # Check if KIE_API_KEY is set
+        if not config.KIE_API_KEY:
+            raise HTTPException(
+                status_code=500, 
+                detail="KIE_API_KEY not configured. Please set the environment variable."
+            )
+        
+        # Make API call to kie.ai
+        # Note: This is a placeholder URL - replace with actual kie.ai endpoint
+        kie_api_url = "https://api.kie.ai/v1/generate/nano-banana"
+        
+        headers = {
+            "Authorization": f"Bearer {config.KIE_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "prompt": text_prompt,
+            "model": "nano-banana"
+        }
+        
+        response = requests.post(kie_api_url, json=payload, headers=headers, timeout=30)
+        
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"kie.ai API error: {response.text}"
+            )
+        
+        # Save the generated image
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp:
+            tmp.write(response.content)
+            tmp_path = tmp.name
+        
+        return FileResponse(
+            tmp_path,
+            media_type="image/png",
+            filename="kie_generated.png",
+            background=lambda: os.unlink(tmp_path)
+        )
+        
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=500, detail=f"kie.ai API request failed: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Image generation failed: {str(e)}")
+
+
 def visualize_masks(image, masks, boxes, scores, threshold=None):
     """
     Visualize segmentation masks on the image

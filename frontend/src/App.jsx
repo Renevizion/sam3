@@ -17,6 +17,9 @@ function App() {
   const [videoPrompt, setVideoPrompt] = useState('')
   const [videoPreview, setVideoPreview] = useState(null)
 
+  // Kie.ai generator state
+  const [kiePrompt, setKiePrompt] = useState('')
+
   const handleImageFileChange = (e) => {
     const file = e.target.files[0]
     if (file) {
@@ -104,6 +107,40 @@ function App() {
     }
   }
 
+  const generateImageKie = async () => {
+    if (!kiePrompt.trim()) {
+      setError('Please enter a prompt')
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+    setResult(null)
+
+    const formData = new FormData()
+    formData.append('text_prompt', kiePrompt)
+
+    try {
+      const response = await fetch('/api/generate/image-kie', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(errorText || 'Failed to generate image')
+      }
+
+      const blob = await response.blob()
+      const resultUrl = URL.createObjectURL(blob)
+      setResult(resultUrl)
+    } catch (err) {
+      setError(err.message || 'An error occurred while generating the image')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="app">
       <header className="header">
@@ -123,6 +160,12 @@ function App() {
           onClick={() => setActiveTab('video')}
         >
           🎥 Video Processing
+        </button>
+        <button
+          className={`tab ${activeTab === 'generator' ? 'active' : ''}`}
+          onClick={() => setActiveTab('generator')}
+        >
+          🎨 Image Generator
         </button>
       </div>
 
@@ -239,6 +282,44 @@ function App() {
                   Note: Video visualization is in development. 
                   Results show tracking was successful.
                 </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'generator' && (
+          <div className="panel">
+            <h2>Generate Image with kie.ai Nano Banana</h2>
+            
+            <div className="prompt-section">
+              <label htmlFor="kie-prompt">Text Prompt:</label>
+              <textarea
+                id="kie-prompt"
+                value={kiePrompt}
+                onChange={(e) => setKiePrompt(e.target.value)}
+                placeholder="e.g., 'a beautiful sunset over mountains', 'a cute robot'"
+                className="prompt-textarea"
+                rows="4"
+              />
+            </div>
+
+            <button
+              onClick={generateImageKie}
+              disabled={loading || !kiePrompt.trim()}
+              className="process-btn"
+            >
+              {loading ? '⏳ Generating...' : '✨ Generate with Nano Banana'}
+            </button>
+
+            {error && <div className="error">{error}</div>}
+
+            {result && typeof result === 'string' && (
+              <div className="result">
+                <h3>Generated Image:</h3>
+                <img src={result} alt="Generated" />
+                <a href={result} download="kie_generated.png" className="download-btn">
+                  ⬇️ Download Image
+                </a>
               </div>
             )}
           </div>
