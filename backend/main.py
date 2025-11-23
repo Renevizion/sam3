@@ -119,7 +119,7 @@ async def process_image(
         return FileResponse(
             tmp_path,
             media_type="image/png",
-            filename=f"result_{file.filename}",
+            filename=f"result_{os.path.basename(file.filename)}",
             background=lambda: os.unlink(tmp_path)
         )
         
@@ -252,7 +252,7 @@ try:
         print(f"✓ Serving frontend from {frontend_path}")
     else:
         print(f"⚠️  Frontend not found at {frontend_path}")
-except Exception as e:
+except (FileNotFoundError, ImportError, RuntimeError) as e:
     print(f"⚠️  Frontend not available: {e}")
 
 
