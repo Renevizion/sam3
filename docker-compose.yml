@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  sam3-app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+      - KIE_API_KEY=${KIE_API_KEY:-}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      # Optional: Mount cache directories to persist model downloads
+      - ./cache/huggingface:/root/.cache/huggingface
+      - ./cache/torch:/root/.cache/torch
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s

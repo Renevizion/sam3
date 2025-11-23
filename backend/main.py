@@ -16,6 +16,11 @@ from PIL import Image
 import torch
 import numpy as np
 
+from config import config
+
+# Validate configuration on startup
+config.validate()
+
 # Global model instances (lazy loaded)
 _image_model = None
 _image_processor = None
@@ -180,11 +185,14 @@ async def process_video(
         raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
 
 
-def visualize_masks(image, masks, boxes, scores, threshold=0.5):
+def visualize_masks(image, masks, boxes, scores, threshold=None):
     """
     Visualize segmentation masks on the image
     Simple visualization with colored masks
     """
+    if threshold is None:
+        threshold = config.SCORE_THRESHOLD
+    
     import numpy as np
     from PIL import ImageDraw
     
@@ -238,12 +246,19 @@ def visualize_masks(image, masks, boxes, scores, threshold=0.5):
 # Mount static files (frontend) - will be added later
 # Uncomment when frontend is built
 try:
-    app.mount("/", StaticFiles(directory="../frontend/dist", html=True), name="static")
-    print("Serving frontend from ../frontend/dist")
+    frontend_path = config.FRONTEND_DIR
+    if os.path.exists(frontend_path):
+        app.mount("/", StaticFiles(directory=frontend_path, html=True), name="static")
+        print(f"✓ Serving frontend from {frontend_path}")
+    else:
+        print(f"⚠️  Frontend not found at {frontend_path}")
 except Exception as e:
-    print(f"Frontend not available: {e}")
+    print(f"⚠️  Frontend not available: {e}")
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    print(f"🚀 Starting SAM3 Web Application on {config.HOST}:{config.PORT}")
+    print(f"📊 Device: {config.DEVICE}")
+    print(f"🔑 HF Token: {'Set ✓' if config.HF_TOKEN else 'Not set ⚠️'}")
+    uvicorn.run(app, host=config.HOST, port=config.PORT)
