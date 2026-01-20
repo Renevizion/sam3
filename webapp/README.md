@@ -70,6 +70,8 @@ cd webapp/backend
 pip install -r requirements.txt
 ```
 
+**Security Note**: Dependencies include patched versions of all packages. Specifically, `python-multipart==0.0.18` addresses a DoS vulnerability (CVE) present in versions < 0.0.18.
+
 ### 3. Setup Frontend
 ```bash
 cd webapp/frontend
