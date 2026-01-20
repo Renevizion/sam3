@@ -73,7 +73,7 @@ LOG_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 # Start backend in background
 echo "Starting backend server on http://localhost:8000"
 cd webapp/backend
-python3 main.py > ../logs/backend_${LOG_TIMESTAMP}.log 2>&1 &
+python3 run.py > ../logs/backend_${LOG_TIMESTAMP}.log 2>&1 &
 BACKEND_PID=$!
 cd ../..
 
