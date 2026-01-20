@@ -162,3 +162,4 @@ Thumbs.db
 # BPE vocabulary files
 *.bpe
 *.vocab
+webapp/frontend/dist/
