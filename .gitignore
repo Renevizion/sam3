@@ -48,6 +48,17 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
+# Node.js / Frontend
+node_modules/
+webapp/frontend/node_modules/
+webapp/frontend/dist/
+webapp/frontend/build/
+.npm
+.yarn
+.pnp
+.pnp.js
+
+
 # Translations
 *.mo
 *.pot
