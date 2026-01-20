@@ -71,8 +71,14 @@ function App() {
   // Camera and drawing loop
   useEffect(() => {
     if (isLive) {
-      // Start camera
-      navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
+      // Start camera with fallback resolution
+      navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+          facingMode: 'user'
+        } 
+      })
         .then(stream => {
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
@@ -93,7 +99,10 @@ function App() {
       }
     }
 
-    // Drawing loop
+    // Drawing loop with frame throttling
+    let lastFrameTime = 0;
+    const frameInterval = 1000 / 10; // Throttle to 10 FPS to reduce load
+    
     const drawLoop = () => {
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -104,18 +113,23 @@ function App() {
       }
 
       const ctx = canvas.getContext('2d');
+      const now = Date.now();
       
       // Draw video frame to canvas
       if (video.readyState === video.HAVE_ENOUGH_DATA) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        // Send frame to backend if in live mode and connected
+        // Send frame to backend if in live mode, connected, and throttled
         if (isLive && socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-          try {
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
-            socketRef.current.send(dataUrl);
-          } catch (err) {
-            console.error('Error sending frame:', err);
+          if (now - lastFrameTime >= frameInterval) {
+            try {
+              // Reduce JPEG quality for better performance (0.3 instead of 0.5)
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.3);
+              socketRef.current.send(dataUrl);
+              lastFrameTime = now;
+            } catch (err) {
+              console.error('Error sending frame:', err);
+            }
           }
         }
         

@@ -163,3 +163,4 @@ Thumbs.db
 *.bpe
 *.vocab
 webapp/frontend/dist/
+webapp/logs/

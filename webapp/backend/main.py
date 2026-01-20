@@ -34,11 +34,21 @@ model = None
 
 
 def get_model():
-    """Lazy load the SAM 3 model"""
+    """
+    Lazy load the SAM 3 model
+    
+    Note: This function imports the SAM 3 model builder which requires:
+    1. The SAM 3 package to be installed (pip install -e . from repo root)
+    2. Access to SAM 3 weights on Hugging Face (optional for testing)
+    3. Authentication with Hugging Face CLI (huggingface-cli login)
+    
+    For testing without weights, this function can be mocked.
+    """
     global model
     if model is None:
         try:
             # Import SAM 3 model builder
+            # This assumes sam3 package is installed via pip install -e .
             from sam3.model_builder import build_sam3_video_predictor
             
             logger.info("Loading SAM 3 model...")

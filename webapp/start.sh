@@ -61,10 +61,19 @@ echo ""
 echo "🚀 Starting servers..."
 echo ""
 
+# Create logs directory if it doesn't exist
+mkdir -p webapp/logs
+
+# Clean up old logs (keep last 5 days)
+find webapp/logs -name "*.log" -mtime +5 -delete 2>/dev/null || true
+
+# Generate timestamp for log files
+LOG_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
 # Start backend in background
 echo "Starting backend server on http://localhost:8000"
 cd webapp/backend
-python3 main.py > backend.log 2>&1 &
+python3 main.py > ../logs/backend_${LOG_TIMESTAMP}.log 2>&1 &
 BACKEND_PID=$!
 cd ../..
 
@@ -73,7 +82,7 @@ sleep 3
 
 # Check if backend is running
 if ! kill -0 $BACKEND_PID 2>/dev/null; then
-    echo "❌ Backend failed to start. Check webapp/backend/backend.log for errors"
+    echo "❌ Backend failed to start. Check webapp/logs/backend_${LOG_TIMESTAMP}.log for errors"
     exit 1
 fi
 
@@ -82,7 +91,7 @@ echo "✅ Backend started (PID: $BACKEND_PID)"
 # Start frontend in background
 echo "Starting frontend server on http://localhost:5173"
 cd webapp/frontend
-npm run dev > frontend.log 2>&1 &
+npm run dev > ../logs/frontend_${LOG_TIMESTAMP}.log 2>&1 &
 FRONTEND_PID=$!
 cd ../..
 
@@ -91,7 +100,7 @@ sleep 3
 
 # Check if frontend is running
 if ! kill -0 $FRONTEND_PID 2>/dev/null; then
-    echo "❌ Frontend failed to start. Check webapp/frontend/frontend.log for errors"
+    echo "❌ Frontend failed to start. Check webapp/logs/frontend_${LOG_TIMESTAMP}.log for errors"
     kill $BACKEND_PID 2>/dev/null
     exit 1
 fi
